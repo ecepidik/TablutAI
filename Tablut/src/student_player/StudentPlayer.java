@@ -1,213 +1,10 @@
-//package student_player;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//
-//import boardgame.Move;
-//import coordinates.Coord;
-//import coordinates.Coordinates;
-//import tablut.TablutBoardState;
-//import tablut.TablutMove;
-//import tablut.TablutPlayer;
-//
-///** A player file submitted by a student. */
-//public class StudentPlayer extends TablutPlayer {
-//
-//	private static int MAX_DEPTH = 4;
-//	private int INITIAL_SWEDE_COUNT;
-//	private int INITIAL_MUSCOVITE_COUNT;
-//	
-//	static long TIME_OUT = 1000000*1200;
-//
-//	
-//	private Move BEST_MOVE;
-//	/**
-//	 * You must modify this constructor to return your student number. This is
-//	 * important, because this is what the code that runs the competition uses to
-//	 * associate you with your agent. The constructor should do nothing else.
-//	 */
-//	public StudentPlayer() {
-//		super("260620324");
-//	}
-//
-//	/**
-//	 * This is the primary method that you need to implement. The ``boardState``
-//	 * object contains the current state of the game, which your agent must use to
-//	 * make decisions.
-//	 */
-//	
-//	public static boolean timeOut(long elapsedTimePerSubTree) {
-//	    	return elapsedTimePerSubTree >= TIME_OUT;
-//	}
-//	
-//	public float minimax(TablutBoardState boardState, int depth, boolean maximizingPlayer) {
-//		if (depth == 0 || boardState.gameOver()) {
-//			return (float) calculateHeuristic(boardState);
-//		}
-//		
-//		if (maximizingPlayer) {
-//			float bestValue = Float.NEGATIVE_INFINITY;
-//		
-//			for(TablutMove legalMove: boardState.getAllLegalMoves()) {	
-//				TablutBoardState nextBoard = (TablutBoardState) boardState.clone();
-//				nextBoard.processMove(legalMove);
-//				float value = minimax(nextBoard, depth-1, false);	
-//				bestValue = Math.max(value, bestValue);
-//			}
-//			return bestValue;
-//			
-//		} else {
-//			float bestValue = Float.POSITIVE_INFINITY;
-//			
-//			for(TablutMove legalMove: boardState.getAllLegalMoves()) {	
-//				TablutBoardState nextBoard = (TablutBoardState) boardState.clone();
-//				nextBoard.processMove(legalMove);
-//				float value = minimax(nextBoard, depth-1, true);	
-//				bestValue = Math.min(value, bestValue);
-//			}
-//			return bestValue;
-//		}
-//	}
-//
-//	public double alphabeta(TablutBoardState boardState, int depth, double alpha, double beta, boolean maximizingPlayer, long elapsedTimePerSubTree) {
-//		if (depth == 0 || boardState.gameOver() || timeOut(elapsedTimePerSubTree)) {
-//			return calculateHeuristic(boardState);
-//		}
-//
-//		List<TablutMove> legalMoves = boardState.getAllLegalMoves();	
-//		if (legalMoves.size() == 0) {
-//			return calculateHeuristic(boardState);
-//		}
-//		
-//		if (maximizingPlayer) {
-//			double bestValue = Double.NEGATIVE_INFINITY;
-//			
-//			for(TablutMove legalMove: legalMoves) {		
-//				TablutBoardState nextBoard = (TablutBoardState) boardState.clone();
-//				nextBoard.processMove(legalMove);
-//				
-//				
-//				bestValue = Math.max(bestValue, alphabeta(nextBoard, depth-1, alpha, beta, false, System.nanoTime() - elapsedTimePerSubTree));
-//				alpha = Math.max(alpha, bestValue);	
-//				
-//				if(beta <= alpha) {
-//					break;
-//				}
-//			}
-//			return alpha;
-//
-//		} else {
-//			double bestValue = Double.POSITIVE_INFINITY;
-//			
-//			for(TablutMove legalMove: legalMoves) {	
-//				TablutBoardState nextBoard = (TablutBoardState) boardState.clone();
-//				nextBoard.processMove(legalMove);
-//				//int newNumberOfOpponentPieces = boardState.getNumberPlayerPieces(boardState.getOpponent());
-//
-//				bestValue = Math.min(bestValue, alphabeta(nextBoard, depth-1, alpha, beta, true, System.nanoTime() - elapsedTimePerSubTree));
-//				beta = Math.min(beta, bestValue);
-//
-//				if(beta <= alpha) {
-//					break;
-//				}	
-//			}
-//			return beta;
-//		}
-//	}
-//	
-//	@Override
-//	public Move chooseMove(TablutBoardState boardState) {
-//		
-//		double maxAlpha = Double.NEGATIVE_INFINITY;
-//		double minBeta = Double.POSITIVE_INFINITY;
-//
-//		double alpha = Double.NEGATIVE_INFINITY;
-//		double beta = Double.POSITIVE_INFINITY;
-//
-//		int depth = MAX_DEPTH;
-//
-//		List<TablutMove> legalMoves = boardState.getAllLegalMoves();
-//		INITIAL_SWEDE_COUNT = boardState.getNumberPlayerPieces(TablutBoardState.SWEDE);
-//		INITIAL_MUSCOVITE_COUNT = boardState.getNumberPlayerPieces(TablutBoardState.MUSCOVITE);
-//
-//		if (player_id == TablutBoardState.MUSCOVITE) {
-//			for(TablutMove legalMove: legalMoves) {
-//				long treestartTime = System.nanoTime();
-//				TablutBoardState nextBoard = (TablutBoardState) boardState.clone();
-//				nextBoard.processMove(legalMove);
-//				alpha = Math.max(alpha, alphabeta(nextBoard, depth-1, alpha, beta, false, System.nanoTime() - treestartTime));	
-//				
-//				if(maxAlpha <= alpha) {
-//					maxAlpha = alpha;
-//					BEST_MOVE = legalMove;			
-//				}
-//			}
-//		}
-//
-//		if (player_id == TablutBoardState.SWEDE) {
-//			Coord kingPos = boardState.getKingPosition();
-//
-//			for (TablutMove kingLegalMove : boardState.getLegalMovesForPosition(kingPos)) {
-//				if (Coordinates.distanceToClosestCorner(kingLegalMove.getEndPosition()) == 0) {
-//					BEST_MOVE = kingLegalMove;
-//					return BEST_MOVE;
-//				}
-//			}
-//			for(TablutMove legalMove: legalMoves) {
-//				TablutBoardState nextBoard = (TablutBoardState) boardState.clone();
-//				nextBoard.processMove(legalMove);
-//				long treestartTime = System.nanoTime();
-//				beta = Math.min(beta, alphabeta(nextBoard, depth-1, alpha, beta, true, System.nanoTime() - treestartTime));	
-//				if(minBeta >= beta) {
-//					minBeta = beta;
-//					BEST_MOVE = legalMove;			
-//				}
-//			}	
-//		}
-//		return BEST_MOVE;
-//	}
-//
-//	public double calculateHeuristic(TablutBoardState boardState) {
-//
-//		int kingDistance = Coordinates.distanceToClosestCorner(boardState.getKingPosition());
-//
-//		int swedesCount = boardState.getNumberPlayerPieces(TablutBoardState.SWEDE);
-//		int muscovitesCount = boardState.getNumberPlayerPieces(TablutBoardState.MUSCOVITE);
-//
-//		double heuristic = 0;
-//		
-//		if (boardState.getTurnPlayer() == TablutBoardState.MUSCOVITE) {
-//			
-//			if (boardState.getWinner() == TablutBoardState.MUSCOVITE) {
-//				heuristic = Double.POSITIVE_INFINITY;
-//			} else if (boardState.getWinner() == TablutBoardState.SWEDE) {
-//				heuristic = Double.NEGATIVE_INFINITY;
-//			} else {
-//				heuristic += INITIAL_SWEDE_COUNT - swedesCount;
-//				heuristic -= INITIAL_MUSCOVITE_COUNT - muscovitesCount;
-//				heuristic += 0.1*(kingDistance);
-//			}
-//		} else {
-//			if (boardState.getWinner() == TablutBoardState.SWEDE) {
-//				heuristic = Double.NEGATIVE_INFINITY;
-//			} else if (boardState.getWinner() == TablutBoardState.MUSCOVITE) {
-//				heuristic = Double.POSITIVE_INFINITY;			
-//			} else {
-//				heuristic -= INITIAL_SWEDE_COUNT - swedesCount;
-//				heuristic += INITIAL_MUSCOVITE_COUNT - muscovitesCount;
-//				heuristic -= 0.5*(8-kingDistance);
-//			}
-//		}
-//		return heuristic;
-//	}
-//}
-
 package student_player;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import boardgame.Move;
 import coordinates.Coord;
@@ -226,9 +23,9 @@ public class StudentPlayer extends TablutPlayer{
 	int PLAYER_ID;
 	int PLAYER_INITIAL_PIECE_COUNT;
 
-	int MAX_DEPTH = 4;
+	int MAX_DEPTH = 3;
 	
-	static long TIME_OUT_SUBTREE = 1000000*500;
+	static long TIME_OUT_SUBTREE = 600000;
 	long SUBTREE_START_TIME;
 
 	public StudentPlayer() {
@@ -243,15 +40,15 @@ public class StudentPlayer extends TablutPlayer{
 	public Move chooseMove(TablutBoardState bs) {
 		List<TablutMove> options = bs.getAllLegalMoves();
 
-		Map<TablutMove, Double> moves = new HashMap<TablutMove, Double>();
-
 		// Set an initial move as some random one.
-		TablutMove bestMove = options.get(rand.nextInt(options.size()));
-		Double bestMoveValue = Double.NEGATIVE_INFINITY;
+		TablutMove bestMove = null;//options.get(rand.nextInt(options.size()));
+		Double bestMoveValue = (double) -1000;
+				//calculateFirstMoveValue(bestMove, bs);
 
 		for (TablutMove move : options) {
+			SUBTREE_START_TIME = System.nanoTime() ;
 			Double moveValue = calculateFirstMoveValue(move, bs);
-			if(bestMoveValue <= moveValue) {
+			if(bestMoveValue < moveValue) {
 				bestMoveValue = Math.max(moveValue, bestMoveValue);
 				bestMove = move;
 			}
@@ -260,7 +57,7 @@ public class StudentPlayer extends TablutPlayer{
 				break;
 			}
 		}
-
+		System.out.println(bestMoveValue);
 		return bestMove;
 	}
 
@@ -284,20 +81,30 @@ public class StudentPlayer extends TablutPlayer{
 		}
 		else {
 			double maxMoveValue = Double.NEGATIVE_INFINITY;
-			return Math.max(maxMoveValue, minimax(cloneBS, MAX_DEPTH-1, OPPONENT_ID));	
+			int depth = MAX_DEPTH;
+			double moveValue = Math.max(maxMoveValue, minimax(cloneBS, depth-1, OPPONENT_ID));	
+			return moveValue;
 		}
 	}
 
 	public double minimax(TablutBoardState boardState, int depth, int id) {
 		if (depth == 0 || boardState.gameOver() || timeOutForSubTree()) {
-			return calculateHeuristic(boardState, id);
+			return calculate(boardState);
 		}
 
+		List<TablutMove> moves = null;
+		try {
+			moves = boardState.getAllLegalMoves();
+		} catch (NullPointerException e) {
+			System.out.println("Caught null");
+		}
+		if(moves.size() <= 0) 
+			return calculate(boardState);
+		
 		//my agent is always the maximizing player
 		if (id == PLAYER_ID) {
 			double bestValue = Double.NEGATIVE_INFINITY;
-
-			for(TablutMove legalMove: boardState.getAllLegalMoves()) {	
+			for(TablutMove legalMove: moves) {	
 				TablutBoardState nextBoard = (TablutBoardState) boardState.clone();
 				nextBoard.processMove(legalMove);
 				double value = minimax(nextBoard, depth-1, OPPONENT_ID);	
@@ -307,7 +114,7 @@ public class StudentPlayer extends TablutPlayer{
 
 		} else {
 			double bestValue = Double.POSITIVE_INFINITY;
-			for(TablutMove legalMove: boardState.getAllLegalMoves()) {	
+			for(TablutMove legalMove: moves) {	
 				TablutBoardState nextBoard = (TablutBoardState) boardState.clone();
 				nextBoard.processMove(legalMove);
 				double value = minimax(nextBoard, depth-1, PLAYER_ID);	
@@ -318,50 +125,82 @@ public class StudentPlayer extends TablutPlayer{
 	}
 
 	private boolean timeOutForSubTree() {
-		if(System.nanoTime() - SUBTREE_START_TIME >= TIME_OUT_SUBTREE)
+		if(System.nanoTime() - SUBTREE_START_TIME >= TIME_OUT_SUBTREE) {
 			return true;
+		}
 		return false;
 	}
 
-	public double calculateHeuristic(TablutBoardState boardState, int id) {
-
-		System.out.println("CALCULATE");
-		int kingDistance = Coordinates.distanceToClosestCorner(boardState.getKingPosition());
-
+//	public double calculate(TablutBoardState boardState, int id) {
+//
+//		int kingDistance = Coordinates.distanceToClosestCorner(boardState.getKingPosition());
+//
+//		int swedesCount = boardState.getNumberPlayerPieces(TablutBoardState.SWEDE);
+//		int muscovitesCount = boardState.getNumberPlayerPieces(TablutBoardState.MUSCOVITE);
+//
+//		double heuristic = 0;
+//
+//		if (boardState.getWinner() == PLAYER_ID) {
+//			heuristic = Double.POSITIVE_INFINITY;
+//		} else if (boardState.getWinner() == OPPONENT_ID) {
+//			heuristic = Double.NEGATIVE_INFINITY;
+//		} else {
+//			if (id == PLAYER_ID) {
+//				//when it's my turn, it will try to maximize the score
+//				if(PLAYER_ID == TablutBoardState.SWEDE) { //more swedes & close king -> high positive more score
+//					heuristic += PLAYER_INITIAL_PIECE_COUNT - swedesCount;
+//					heuristic -= OPPONENT_INITIAL_PIECE_COUNT - muscovitesCount;
+//					heuristic -= 0.5*(kingDistance);
+//				} else if(PLAYER_ID == TablutBoardState.MUSCOVITE) { //more muscovites & further king -> high positive score
+//					heuristic += PLAYER_INITIAL_PIECE_COUNT - muscovitesCount;
+//					heuristic -= OPPONENT_INITIAL_PIECE_COUNT - swedesCount;
+//					heuristic += 0.1*(kingDistance);
+//				}
+//			} else if (id == OPPONENT_ID){
+//				//when it's opponents turn, it will try to minimize the score
+//				if(OPPONENT_ID == TablutBoardState.SWEDE) { //more swedes & close king -> high negative score
+//					heuristic += PLAYER_INITIAL_PIECE_COUNT - muscovitesCount;
+//					heuristic -= OPPONENT_INITIAL_PIECE_COUNT - swedesCount;
+//					heuristic += 0.5*(kingDistance);
+//				} else if(OPPONENT_ID == TablutBoardState.MUSCOVITE) { //more muscovites & far king -> high negative score
+//					heuristic += PLAYER_INITIAL_PIECE_COUNT - swedesCount;
+//					heuristic -= OPPONENT_INITIAL_PIECE_COUNT - muscovitesCount;
+//					heuristic -= 0.1*(kingDistance);
+//				}
+//			}
+//		}
+//		return heuristic;
+//	}
+	
+	public double calculate(TablutBoardState boardState) {
+		Coord kingPos = boardState.getKingPosition();
+		int kingDistance = 0;
+		
+		try {
+			kingDistance = Coordinates.distanceToClosestCorner(kingPos);
+		} catch (NullPointerException e) {}
+	
 		int swedesCount = boardState.getNumberPlayerPieces(TablutBoardState.SWEDE);
 		int muscovitesCount = boardState.getNumberPlayerPieces(TablutBoardState.MUSCOVITE);
-
+		
 		double heuristic = 0;
-
+		
 		if (boardState.getWinner() == PLAYER_ID) {
 			heuristic = Double.POSITIVE_INFINITY;
 		} else if (boardState.getWinner() == OPPONENT_ID) {
 			heuristic = Double.NEGATIVE_INFINITY;
-		} else {
-			if (id == PLAYER_ID) {
-				//when it's my turn, it will try to maximize the score
-				if(PLAYER_ID == TablutBoardState.SWEDE) { //more swedes & close king -> high positive more score
-					heuristic += PLAYER_INITIAL_PIECE_COUNT - swedesCount;
-					heuristic -= OPPONENT_INITIAL_PIECE_COUNT - muscovitesCount;
-					heuristic += 0.5*(8-kingDistance);
-				} else if(PLAYER_ID == TablutBoardState.MUSCOVITE) { //more muscovites & further king -> high positive score
-					heuristic += PLAYER_INITIAL_PIECE_COUNT - muscovitesCount;
-					heuristic -= OPPONENT_INITIAL_PIECE_COUNT - swedesCount;
-					heuristic += 0.1*(kingDistance);
-				}
-			} else if (id == OPPONENT_ID){
-				//when it's opponents turn, it will try to minimize the score
-				if(OPPONENT_ID == TablutBoardState.SWEDE) { //more swedes & close king -> high negative score
-					heuristic += PLAYER_INITIAL_PIECE_COUNT - muscovitesCount;
-					heuristic -= OPPONENT_INITIAL_PIECE_COUNT - swedesCount;
-					heuristic -= 0.5*(8-kingDistance);
-				} else if(OPPONENT_ID == TablutBoardState.MUSCOVITE) { //more muscovites & far king -> high negative score
-					heuristic += PLAYER_INITIAL_PIECE_COUNT - swedesCount;
-					heuristic -= OPPONENT_INITIAL_PIECE_COUNT - muscovitesCount;
-					heuristic -= 0.1*(kingDistance);
-				}
+		}else {
+			if(PLAYER_ID == TablutBoardState.SWEDE) {
+				heuristic += swedesCount;
+				heuristic -= muscovitesCount;
+				heuristic -= 0.5*(kingDistance);
+			} else {
+				heuristic -= swedesCount;
+				heuristic += muscovitesCount;
+				heuristic += 0.2*(kingDistance);
 			}
 		}
 		return heuristic;
 	}
 }
+
